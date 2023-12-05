@@ -14,16 +14,16 @@ jobs:
       matrix:
         os: 
           - ["windows-2019", "Visual Studio 16 2019"]
-          # - ["windows-2022", "Visual Studio 17 2022"]
+          # - ["windows-2022", "Visual Studio 17 2022"] # requires cuda 11.6+, disabled for simple matrix for now.
         cuda: 
-          # - "11.0.3" # unsupported by CCCL
-          # - "11.1.1"
-          # - "11.2.2"
-          # - "11.3.1"
-          # - "11.4.4"
-          # - "11.5.2"
-          # - "11.6.2"
-          # - "11.7.1"
+          - "11.0.3" # unsupported by CCCL
+          - "11.1.1"
+          - "11.2.2"
+          - "11.3.1"
+          - "11.4.4"
+          - "11.5.2"
+          - "11.6.2"
+          - "11.7.1"
           - "11.8.0"
         cccl_ref:
           # - "v2.2.0"
