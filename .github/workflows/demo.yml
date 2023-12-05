@@ -1,0 +1,72 @@
+name: demo
+
+on:
+  push:
+    branches: 
+      - "**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on:  ${{ matrix.os[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: 
+          - ["windows-2019", "Visual Studio 16 2019"]
+          # - ["windows-2022", "Visual Studio 17 2022"]
+        cuda: 
+          # - "11.0.3" # unsupported by CCCL
+          # - "11.1.1"
+          # - "11.2.2"
+          # - "11.3.1"
+          # - "11.4.4"
+          # - "11.5.2"
+          # - "11.6.2"
+          # - "11.7.1"
+          - "11.8.0"
+        cccl_ref:
+          # - "v2.2.0"
+          - "main"
+    env:
+      visual_studio: ${{ matrix.os[1] }}
+      cuda: ${{ matrix.cuda }}
+      cccl_ref: ${{ matrix.cccl_ref }}
+    name: "CUDA ${{ matrix.cuda }} CCCL ${{ matrix.cccl_ref }} ${{ matrix.os[1] }}"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Support longpaths
+      run: git config --system core.longpaths true
+
+    - name: Install CUDA (Windows)
+      if: ${{ runner.os == 'Windows' && env.cuda != '' }}
+      shell: powershell
+      env:
+        cuda: ${{ env.cuda }}
+        visual_studio: ${{ env.visual_studio }}
+      run: .github\scripts\install_cuda_windows.ps1
+
+    - name: Clone nvidia/CCCL
+      uses: actions/checkout@v3
+      with:
+        repository: nvidia/CCCL
+        ref: ${{ env.cccl_ref }}
+        path: cccl
+
+    - name: Configure CMake
+      working-directory: cccl
+      id: configure
+      run: |
+        mkdir -p examples/example_project/build
+        cd examples/example_project/build
+        cmake .. -G "${{ env.visual_studio }}" -A x64 -DCMAKE_CUDA_ARCHITECTURES=80 -DCCCL_TAG=${{ env.cccl_ref }}
+      shell: bash
+
+    - name: Build
+      working-directory: cccl/examples/example_project/build
+      run: cmake --build . --config Release --verbose -j `nproc`
+      shell: bash
+
+    # No GPU so compilation only.
