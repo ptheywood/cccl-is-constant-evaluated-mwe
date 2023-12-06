@@ -27,7 +27,7 @@ jobs:
           - "11.8.0"
         cccl_ref:
           # - "v2.2.0"
-          - "main"
+          - "pull-request/1180"
     env:
       visual_studio: ${{ matrix.os[1] }}
       cuda: ${{ matrix.cuda }}
